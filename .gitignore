@@ -19,5 +19,26 @@
 *.tar.gz
 *.rar
 
+#Files
+*.log
+*.dex
+*.apk
+*.exe
+*.jks
+
+#Genereted Files
+bin/
+gen/
+out/
+target/
+logs/
+screenshot/
+driver/
+Esame/report/
+*/node_modules
+/package-log.json
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+.idea/
