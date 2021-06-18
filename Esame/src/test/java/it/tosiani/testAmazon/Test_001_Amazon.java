@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Properties;
 
 import static it.tosiani.Utility.GlobalParameters.*;
-import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
