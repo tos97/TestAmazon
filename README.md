@@ -13,5 +13,5 @@ Dal Sito Amazon
 10) Fare tutti i test anche x risoluzione IPHONE ( lo stesso test deve funzionare sia su web kiosk mode che Mobile Mode “iphone”)
 
 # Problemi
-- Problemi con il punto 8, per colpa delle virgole e dei punti nei prezzi
-- Non implementate soluzioni per mobile del punto 10
+- Problemi con il punto 8, per colpa delle virgole e dei punti nei prezzi(sia mobile che web)
+- Problemi di Amazon al punto 4 

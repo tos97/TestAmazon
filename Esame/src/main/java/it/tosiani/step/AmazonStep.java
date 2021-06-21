@@ -18,6 +18,8 @@ public class AmazonStep {
     private String ERRORE = "";
     private int indice = 0;
     private float sommaCarrello = 0;
+    private int totaleCercato = 0;
+    private int totale = -1;
 
     public AmazonStep(ChromeDriver driver, Properties prop) {
         this.driver = driver;
@@ -32,6 +34,22 @@ public class AmazonStep {
         this.ERRORE = ERRORE;
     }
 
+    public int getTotaleCercato() {
+        return totaleCercato;
+    }
+
+    public void setTotaleCercato(int totaleCercato) {
+        this.totaleCercato = totaleCercato;
+    }
+
+    public int getTotale() {
+        return totale;
+    }
+
+    public void setTotale(int totale) {
+        this.totale = totale;
+    }
+
     public String getSommaCarrelloString() {
         return String.valueOf((sommaCarrello));
     }
@@ -40,6 +58,10 @@ public class AmazonStep {
         this.sommaCarrello += sommaCarrello;
     }
 
+    /**
+     * Chiude il banner
+     * @return responso dell'operazione
+     */
     public boolean closeBanner(){
         try {
             Thread.sleep(3000);
@@ -54,18 +76,34 @@ public class AmazonStep {
         return false;
     }
 
-    public void start() throws InterruptedException {
+    /**
+     * Inizia il test aprendo amazon e massimizzando la pagina
+     * @param mobile se è mobile apre solo amazon
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
+    public void start(boolean mobile) throws InterruptedException {
         driver.get(prop.getProperty("A.url"));
         closeBanner();
-        driver.manage().window().maximize();
+        if (!mobile)
+            driver.manage().window().maximize();
         Thread.sleep(4000);
     }
 
+    /**
+     * inserisce una stringa nella barra delle ricerche
+     * @param qry
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
     public void ricercaQuery(String qry) throws InterruptedException {
         driver.findElement(By.id(prop.getProperty("id.search.bar"))).sendKeys(qry);
         Thread.sleep(2000);
     }
 
+    /**
+     * Preme invio dopo aver premuto su un risultato suggerito per la ricerca
+     * @return la stringa che contiene la stringa suggerita che verrà cercata
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
     public String ricercaEnter() throws InterruptedException {
         WebElement webElement = driver.findElement(By.id(prop.getProperty("id.search.suggerimento")));
         String elementClick = webElement.getText();
@@ -74,6 +112,9 @@ public class AmazonStep {
         return elementClick;
     }
 
+    /**
+     * @return ritorna una stringa pronta per il report per le offerte in evidenza
+     */
     public String ritornaListaBestseller(){
         String risultato = "";
         for(WebElement element: driver.findElement(By.className("feed-carousel-shelf"))
@@ -84,6 +125,9 @@ public class AmazonStep {
         return risultato;
     }
 
+    /**
+     * @return ritorna una stringa pronta per il report per la tendina delle categorie
+     */
     public String ritornaListaCategorie(){
         String risultato = "";
         for(WebElement element: driver.findElements(By.id(prop.getProperty("id.categorie")))){
@@ -117,14 +161,26 @@ public class AmazonStep {
         return tmp;
     }*/
 
+    /**
+     * @param i serve per ricordare l'indice della ricerca
+     */
     public void setIndice(int i){
         indice = i;
     }
 
+    /**
+     * @return ritorna l'indice
+     */
     public int getIndice() {
         return indice;
     }
 
+    /**
+     * Cerca gli elementi fuoriusciti da una ricerca
+     * @param elemento un path che serviva
+     * @return ritorna una stringa pronta per essere inserita nel report
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
     public String stampaLista(WebElement elemento) throws InterruptedException {
         String risultato = "";
         int i = 1;
@@ -150,6 +206,11 @@ public class AmazonStep {
         return risultato;
     }
 
+    /**
+     * Apre risultati in altre schede
+     * @param extentTest per fare screen dei report
+     * @return per uscire dopo che ha aperto le pagine volute
+     */
     public boolean ricercaTab(ExtentTest extentTest){
         int i = 0;
         String handler = driver.getWindowHandle();
@@ -175,6 +236,47 @@ public class AmazonStep {
         return false;
     }
 
+    /**
+     * clicca su un elemento della navbar
+     * @param select per decidere il filtro della nav bar in alto
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
+    public void navBar(String select) throws InterruptedException {
+        for (WebElement element: driver.findElements(By.className("nav-a"))) {
+            if (element.getText().equals(select)) {
+                element.click();
+                Thread.sleep(2000);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Esplora i filtri selezionandone uno (nello specifico videogiochi in novità)
+     * @param extentTest serve per fare lo screen in questo punto
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
+    public void nFiltri(ExtentTest extentTest) throws InterruptedException {
+        for (int i = 1; i <= 29; i++) {
+            String elemento = prop.getProperty("xpath.left.filter.parte1") + i + prop.getProperty("xpath.left.filter.parte2");
+            if (driver.findElement(By.xpath(elemento)).getText().equals("Videogiochi"))
+                driver.findElement(By.xpath(elemento)).click();
+        }
+        Thread.sleep(1000);
+        extentTest.log(LogStatus.INFO, "Screen dopo la selezione dei filtri voluti", extentTest.addBase64ScreenShot(Utils.getScreenBase64Android()));
+
+        for (WebElement element : driver.findElements(By.className(prop.getProperty("class.li.ricerca")))) {
+            totaleCercato++;
+            totale = new Integer(element.findElement(By.className(prop.getProperty("class.totale"))).getText().substring(1));
+        }
+        setTotale(totale);
+        setTotaleCercato(totaleCercato);
+    }
+
+    /**
+     * Aggiunge l'articolo al carrello
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
     public void carrello() throws InterruptedException {
         driver.findElement(By.id(prop.getProperty("id.btn.add.cart"))).click();
         Thread.sleep(2000);
@@ -197,6 +299,11 @@ public class AmazonStep {
         Thread.sleep(2000);
     }
 
+    /**
+     * Prende le info dell'articolo da mettere nel carrello
+     * @return ritorna il prezzo che senìrviva per la somma che da errore quindi non utilizzata
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
     public float selezioneProdotto() throws InterruptedException {
         float somma = 0;
         for(WebElement elements: driver.findElement(By.className(prop.getProperty("class.risultati.ricerca")))
@@ -214,18 +321,27 @@ public class AmazonStep {
                 Thread.sleep(2000);
                 carrello();
                 return somma;
+            } else {
+                elements.findElement(By.className("a-size-base-plus")).click();
+                Thread.sleep(2000);
+                carrello();
+                return somma;
             }
         }
         return somma;
     }
 
-    public int removeAll(WebDriver driver) throws InterruptedException {
+    /**
+     * Rimuove tutto dal carrello
+     * @return restituisce il numero di elementi nel carrello oppure -1 se errore
+     */
+    public int removeAll(){
         try {
             int totale = driver.findElements(By.cssSelector("input[value = 'Rimuovi']")).size();
             for (int i = totale; i > 0; i--) {
                 driver.findElements(By.cssSelector("input[value = 'Rimuovi']")).get(i - 1).click();
+                Thread.sleep(2000);
             }
-            Thread.sleep(2000);
             driver.navigate().refresh();
             Thread.sleep(2000);
             return driver.findElements(By.cssSelector("input[value = 'Rimuovi']")).size();
