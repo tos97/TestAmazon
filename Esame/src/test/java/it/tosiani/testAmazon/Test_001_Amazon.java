@@ -26,11 +26,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class Test_001_Amazon {
     static private ChromeDriver driver = null;
     static private WebElement webElement = null;
-    static private String nomeProp = "amazon";
     static private ExtentReports extentReports;
     static private ExtentTest extentTest;
     static private Properties prop = null;
-    static private boolean mobile = true;
+    static private boolean mobile = false;
     static private AmazonStep step = null;
     static private MobileStep stepM = null;
 
@@ -40,7 +39,6 @@ public class Test_001_Amazon {
         if(mobile){
             defaultChromeOptions.addArguments("--window-size=375,812");
             defaultChromeOptions.addArguments("--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148");
-            nomeProp = "mobile";
         }
 
         extentReports = new ExtentReports(REPORT_PATH + File.separator + "amazonReport" + EXT_HTML, true);
@@ -68,10 +66,10 @@ public class Test_001_Amazon {
         Thread.sleep(1000);
         if (mobile) {
             extentTest.log(LogStatus.INFO, "Fatto sul mobile","");
-            risultato = stepM.ritornaListaBestseller("Offerte in evidenza");
+            risultato = stepM.ritornaListaBestseller(false);
         } else {
             extentTest.log(LogStatus.INFO, "Fatto sul web","");
-            risultato = step.ritornaListaBestseller();
+            risultato = step.ritornaListaBestseller(false);
         }
         Thread.sleep(1000);
         if (risultato.length() > 0)
@@ -92,7 +90,7 @@ public class Test_001_Amazon {
         String risultato = "";
         if (mobile) {
             extentTest.log(LogStatus.INFO, "Fatto sul mobile","");
-            risultato = stepM.ritornaListaCategorie();
+            risultato = stepM.ritornaListaCategorie(false);
         } else {
             extentTest.log(LogStatus.INFO, "Fatto sul web","");
             risultato = step.ritornaListaCategorie();

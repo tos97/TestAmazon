@@ -58,28 +58,36 @@ public class MobileStep {
     }
 
     /**
+     * @param console serve per controllare se viene richesto da cucumbe (in quel caso è true)
      * @return ritorna una stringa pronta per il report per le offerte in evidenza
      */
-    public String ritornaListaBestseller(String qry) throws InterruptedException {
+    public String ritornaListaBestseller(boolean console) throws InterruptedException {
         String risultato = "";
         for(WebElement element: driver.findElements(By.className("gwm-Card--withPadding"))){
             Thread.sleep(1000);
-            if (element.findElement(By.className("gwm-Card-heading")).getText().equals(qry)) {
-                for(WebElement elements: element.findElements(By.className("gwm-DealsState-dealAvailable"))) {
-                    Thread.sleep(1000);
-                    risultato += elements.findElement(By.className("gwm-DealsCard-title")).getText() + "<br>"
-                            + elements.findElement(By.className("gwm-DealsCard-salePrice")).getText() + "<br>"
-                            + elements.findElement(By.className("gwm-DealsCard-image")).getAttribute("src") + "<br>" + "<br>";
+            for(WebElement elements: element.findElements(By.className("gwm-MultiAsinCard-row"))) {
+                Thread.sleep(1000);
+                if (console){
+                    risultato += elements.findElement(By.className("gwm-MultiAsinCard-productTitle")).getText() + "\n"
+                            + elements.findElement(By.className("gwm-MultiAsinCard-productPrice")).getText() + "\n"
+                            + elements.findElement(By.className("a-dynamic-image")).getAttribute("src") + "\n" + "\n";
+                } else {
+                    risultato += elements.findElement(By.className("gwm-MultiAsinCard-productTitle")).getText() + "<br>"
+                            + elements.findElement(By.className("gwm-MultiAsinCard-productPrice")).getText() + "<br>"
+                            + elements.findElement(By.className("a-dynamic-image")).getAttribute("src") + "<br>" + "<br>";
                 }
             }
+            if (risultato.length() != 0)
+                return risultato;
         }
         return risultato;
     }
 
     /**
+     * @param console serve per controllare se viene richesto da cucumbe (in quel caso è true)
      * @return ritorna una stringa pronta per il report per le categorie
      */
-    public String ritornaListaCategorie() throws InterruptedException {
+    public String ritornaListaCategorie(boolean console) throws InterruptedException {
         String risultato = "";
         driver.findElement(By.id(prop.getProperty("id.side.menu"))).click();
         Thread.sleep(2000);
@@ -87,7 +95,11 @@ public class MobileStep {
         Thread.sleep(2000);
         for(WebElement element: driver.findElement(By.cssSelector("ul[data-menu-id = '2']"))
                 .findElements(By.className("hmenu-item"))){
-            risultato += element.getText()+"<br>";
+            if (console) {
+                risultato += element.getText() + "\n";
+            } else {
+                risultato += element.getText() + "<br>";
+            }
         }
         return risultato;
     }
@@ -123,22 +135,26 @@ public class MobileStep {
      */
     public String stampaLista(WebElement elemento) throws InterruptedException {
         String risultato = "";
-        int i = 1;
-        for (WebElement elements : elemento.findElements(By.cssSelector("div[data-component-type = 's-search-result']"))) {
+        try {
+            int i = 1;
+            for (WebElement elements : elemento.findElements(By.cssSelector("div[data-component-type = 's-search-result']"))) {
 
-            risultato += i+"<br>"+elements.findElement(By.className("a-size-small")).getText()+"<br>"+
-                    elements.findElement(By.className("a-price-whole")).getText()+"<br>"+
-                    elements.findElement(By.className("s-image")).getAttribute("src")+"<br>";
-            System.out.println(i+"\n"+elements.findElement(By.className("a-size-small")).getText()+"\n"+
-                    elements.findElement(By.className("a-price-whole")).getText()+"\n"+
-                    elements.findElement(By.className("s-image")).getAttribute("src")+"\n");
+                risultato += i + "<br>" + elements.findElement(By.className("a-size-small")).getText() + "<br>" +
+                        elements.findElement(By.className("a-price-whole")).getText() + "<br>" +
+                        elements.findElement(By.className("s-image")).getAttribute("src") + "<br>";
+                System.out.println(i + "\n" + elements.findElement(By.className("a-size-small")).getText() + "\n" +
+                        elements.findElement(By.className("a-price-whole")).getText() + "\n" +
+                        elements.findElement(By.className("s-image")).getAttribute("src") + "\n");
 
-            System.out.println(i);
-            Thread.sleep(3000);
-            //i++;
+                System.out.println(i);
+                Thread.sleep(3000);
+                //i++;
+            }
+            setIndice(i);
+            return risultato;
+        } catch (Exception e){
+            return risultato;
         }
-        setIndice(i);
-        return risultato;
     }
 
     /**
@@ -154,6 +170,26 @@ public class MobileStep {
         }
         Thread.sleep(1000);
         extentTest.log(LogStatus.INFO, "Screen dopo la selezione dei filtri voluti", extentTest.addBase64ScreenShot(Utils.getScreenBase64Android()));
+        for (WebElement element : driver.findElements(By.cssSelector("li[data-fling-container='true']"))) {
+            totaleCercato++;
+            totale = new Integer(element.findElement(By.className(prop.getProperty("class.totale"))).getText().substring(1));
+        }
+        setTotale(totale);
+        setTotaleCercato(totaleCercato);
+    }
+
+    /**
+     * Esplora i filtri selezionandone uno (nello specifico videogiochi in novità) senza report di selenium, fatto per cucumber
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
+    public void nFiltri(String qry) throws InterruptedException {
+        for (WebElement element: driver.findElement(By.id("zg-mobile-browseRoot"))
+                .findElements(By.className("a-link-normal"))){
+            if (element.getText().equals(qry))
+                element.click();
+        }
+        Thread.sleep(1000);
+        Utils.getScreenshot();
         for (WebElement element : driver.findElements(By.cssSelector("li[data-fling-container='true']"))) {
             totaleCercato++;
             totale = new Integer(element.findElement(By.className(prop.getProperty("class.totale"))).getText().substring(1));

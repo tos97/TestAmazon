@@ -23,6 +23,8 @@
         <cucumber-junit.version>1.2.5</cucumber-junit.version>
         <cucumber-java.version>1.2.5</cucumber-java.version>
         <selenium.version>4.0.0-beta-3</selenium.version>
+        <cucumber-junit.version>1.2.5</cucumber-junit.version>
+        <cucumber-java.version>1.2.5</cucumber-java.version>
         <appium.client.version>7.3.0</appium.client.version>
         <reports-plugin.version>2.41.2</reports-plugin.version>
         <log4j.version>1.2.17</log4j.version>
@@ -41,6 +43,17 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.api.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber-junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber-java.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

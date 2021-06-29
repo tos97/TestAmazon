@@ -113,14 +113,20 @@ public class AmazonStep {
     }
 
     /**
+     * @param console serve per controllare se viene richesto da cucumbe (in quel caso è true)
      * @return ritorna una stringa pronta per il report per le offerte in evidenza
      */
-    public String ritornaListaBestseller(){
+    public String ritornaListaBestseller(boolean console){
         String risultato = "";
         for(WebElement element: driver.findElement(By.className("feed-carousel-shelf"))
                 .findElements(By.className("feed-carousel-card"))){
-            risultato += element.findElement(By.className("product-image")).getAttribute("alt")+"<br>"
-                    +element.findElement(By.className("product-image")).getAttribute("src")+"<br>"+"<br>";
+            if (console){
+                risultato += element.findElement(By.className("product-image")).getAttribute("alt") + "\n"
+                        + element.findElement(By.className("product-image")).getAttribute("src") + "\n" + "\n";
+            } else {
+                risultato += element.findElement(By.className("product-image")).getAttribute("alt") + "<br>"
+                        + element.findElement(By.className("product-image")).getAttribute("src") + "<br>" + "<br>";
+            }
         }
         return risultato;
     }
@@ -131,7 +137,7 @@ public class AmazonStep {
     public String ritornaListaCategorie(){
         String risultato = "";
         for(WebElement element: driver.findElements(By.id(prop.getProperty("id.categorie")))){
-            risultato += element.getText()+"<br>";
+            risultato += element.getText();
         }
         return risultato;
     }
@@ -183,27 +189,36 @@ public class AmazonStep {
      */
     public String stampaLista(WebElement elemento) throws InterruptedException {
         String risultato = "";
-        int i = 1;
-        for(WebElement elements: elemento.findElements(By.cssSelector("div[data-component-type = 's-search-result']"))){
-            int j = 0;
-            for(WebElement element: elements.findElement(By.className("a-spacing-medium")).
-                    findElements(By.className("a-section"))){
-                j++;
+        try {
+            int i = 1;
+            for (WebElement elements : elemento.findElements(By.cssSelector("div[data-component-type = 's-search-result']"))) {
+                int j = 0;
+                for (WebElement element : elements.findElement(By.className("a-spacing-medium")).
+                        findElements(By.className("a-section"))) {
+                    j++;
+                }
+                if (j > 4) {
+                    risultato += i + "<br>" + elements.findElement(By.className("a-size-base-plus")).getText() + "<br>" +
+                            elements.findElement(By.className("a-price-whole")).getText() + "<br>" +
+                            elements.findElement(By.className("s-image")).getAttribute("src") + "<br>";
+                    System.out.println(i + "\n" + elements.findElement(By.className("a-size-base-plus")).getText() + "\n" +
+                            elements.findElement(By.className("a-price-whole")).getText() + "\n" +
+                            elements.findElement(By.className("s-image")).getAttribute("src") + "\n");
+                } else {
+                    risultato += i + "<br>" + elements.findElement(By.className("a-size-base-plus")).getText() + "<br>" + "" + "<br>" +
+                            elements.findElement(By.className("s-image")).getAttribute("src") + "<br>";
+                    System.out.println(i + "\n" + elements.findElement(By.className("a-size-base-plus")).getText() + "\n" + "" + "\n" +
+                            elements.findElement(By.className("s-image")).getAttribute("src") + "\n");
+                }
+                System.out.println(i);
+                Thread.sleep(1000);
+                i++;
             }
-            if(j > 4) {
-                risultato += i+"<br>"+elements.findElement(By.className("a-size-base-plus")).getText()+"<br>"+
-                        elements.findElement(By.className("a-price-whole")).getText()+"<br>"+
-                        elements.findElement(By.className("s-image")).getAttribute("src")+"<br>";
-            } else {
-                risultato += i+"<br>"+elements.findElement(By.className("a-size-base-plus")).getText()+"<br>"+""+"<br>"+
-                        elements.findElement(By.className("s-image")).getAttribute("src")+"<br>";
-            }
-            System.out.println(i);
-            Thread.sleep(1000);
-            i++;
+            setIndice(i);
+            return risultato;
+        } catch (Exception e){
+            return risultato;
         }
-        setIndice(i);
-        return risultato;
     }
 
     /**
@@ -226,6 +241,35 @@ public class AmazonStep {
                 driver.get(url);
                 Thread.sleep(1000);
                 extentTest.log(LogStatus.INFO, "Screen nuova pagina",extentTest.addBase64ScreenShot(Utils.getScreenBase64Android()));
+                driver.switchTo().window(handler);
+                i++;
+                url = "";
+            }
+        } catch (Exception e){
+            setERRORE(e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Apre risultati in altre schede senza report di selenium
+     * @param tabs pagine da aprire
+     * @return per uscire dopo che ha aperto le pagine volute
+     */
+    public boolean ricercaTab(int tabs){
+        int i = 0;
+        String handler = driver.getWindowHandle();
+        String url = "";
+        try {
+            for (WebElement element : driver.findElement(By.className(prop.getProperty("class.risultati.ricerca")))
+                    .findElements(By.cssSelector("div[data-component-type = 's-search-result']"))) {
+                if (i > (tabs-1))
+                    return true;
+                url += element.findElement(By.className("a-text-normal")).getAttribute("href");
+                driver.switchTo().newWindow(WindowType.TAB);
+                Thread.sleep(1000);
+                driver.get(url);
+                Thread.sleep(1000);
                 driver.switchTo().window(handler);
                 i++;
                 url = "";
@@ -264,6 +308,27 @@ public class AmazonStep {
         }
         Thread.sleep(1000);
         extentTest.log(LogStatus.INFO, "Screen dopo la selezione dei filtri voluti", extentTest.addBase64ScreenShot(Utils.getScreenBase64Android()));
+
+        for (WebElement element : driver.findElements(By.className(prop.getProperty("class.li.ricerca")))) {
+            totaleCercato++;
+            totale = new Integer(element.findElement(By.className(prop.getProperty("class.totale"))).getText().substring(1));
+        }
+        setTotale(totale);
+        setTotaleCercato(totaleCercato);
+    }
+
+    /**
+     * Esplora i filtri selezionandone uno (nello specifico videogiochi in novità) senza report di selenium, fatto per cucumber
+     * @throws InterruptedException per poter utilizzare gli sleep
+     */
+    public void nFiltri(String qry) throws InterruptedException {
+        for (int i = 1; i <= 29; i++) {
+            String elemento = prop.getProperty("xpath.left.filter.parte1") + i + prop.getProperty("xpath.left.filter.parte2");
+            if (driver.findElement(By.xpath(elemento)).getText().equals(qry))
+                driver.findElement(By.xpath(elemento)).click();
+        }
+        Thread.sleep(1000);
+        Utils.getScreenshot();
 
         for (WebElement element : driver.findElements(By.className(prop.getProperty("class.li.ricerca")))) {
             totaleCercato++;
