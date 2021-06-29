@@ -11,7 +11,10 @@ Dal Sito Amazon
 8) Verificare che il totale del carrello sia uguale al totale fatto da voi dei singoli prodotti
 9) Svuotare il carello (se pieno e se vuoto)  NB: se il carrello è vuoto verificare che non sia presente il tasto
 10) Fare tutti i test anche x risoluzione IPHONE ( lo stesso test deve funzionare sia su web kiosk mode che Mobile Mode “iphone”)
+11) Rifare tutto in cucumber
 
 # Problemi
 - Problemi con il punto 8, per colpa delle virgole e dei punti nei prezzi(sia mobile che web)
 - Problemi di Amazon al punto 4 
+- problemi al punto 4 in cucumber
+- test 7 e 9 uniti per problemi di istanze per gli Scenari 
